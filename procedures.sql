@@ -32,32 +32,17 @@ SELECT * FROM employee WHERE contract_type = 'Temporary';
 
 
 
-CREATE OR REPLACE PROCEDURE increase_salaries_decimal(percentage DECIMAL)
+CREATE OR REPLACE PROCEDURE increase_salaries_decimal(percentage DECIMAL, salary_limit DECIMAL DEFAULT NULL)
 AS $$
 BEGIN
+  IF salary_limit IS NULL OR salary_limit = 0 THEN
+    salary_limit := 5000;
+  END IF;
+  
   UPDATE employee
   SET salary = salary * (1 + percentage)
-  WHERE salary < 5000;
+  WHERE salary < salary_limit;
 END;
 $$ LANGUAGE plpgsql;
 
-CALL increase_salaries_decimal(0.1);
-
-SELECT * FROM employee WHERE salary < 5000;
-
-
-
-CREATE OR REPLACE PROCEDURE increase_salaries_integer(percentage INTEGER)
-AS $$
-BEGIN
-  UPDATE employee
-  SET salary = salary + (salary * percentage / 100)
-  WHERE salary < 5000;
-END;
-$$ LANGUAGE plpgsql;
-
-CALL increase_salaries_integer(10);
-
-SELECT * FROM employee;
-
-	
+CALL increase_salaries_decimal(0.1, 1000);
